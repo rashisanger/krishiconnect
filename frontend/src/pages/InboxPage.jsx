@@ -1,0 +1,42 @@
+import { useState } from 'react';
+import { ArrowRight, Check, CircleDollarSign, MessageCircle, Send, X } from 'lucide-react';
+import { useAuth } from '../state/AuthContext.jsx';
+import { negotiationApi } from '../api/services.js';
+import { unwrapPage } from '../api/client.js';
+import { useRequest } from '../hooks/useRequest.js';
+import { EmptyState, ErrorState, LoadingState, Notice } from '../components/Feedback.jsx';
+import { FormField } from '../components/FormField.jsx';
+import { Modal } from '../components/Modal.jsx';
+
+const money = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value || 0));
+const date = (value) => value ? new Date(value).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—';
+const badge = (status) => `status-badge status-badge--${String(status || '').toLowerCase()}`;
+
+function EnquiryResponseForm({ enquiry, onSave, onClose }) {
+  const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  async function submit(event) { event.preventDefault(); setBusy(true); try { await onSave({ farmer_response: message }); onClose(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  return <form className="form-stack modal-form" onSubmit={submit}><p className="form-explainer">Replying to an enquiry for <b>{enquiry.crop_name}</b> · {enquiry.requested_quantity} {enquiry.listing_unit}</p><Notice tone="danger">{error}</Notice><FormField as="textarea" name="response" label="Your reply" required value={message} onChange={(e) => setMessage(e.target.value)} rows={5} placeholder="Share availability, timing, or anything the buyer should know…" /><div className="modal-actions"><button type="button" className="button button--secondary" onClick={onClose}>Not now</button><button className="button button--primary" disabled={busy}>{busy ? 'Sending…' : 'Send reply'} <Send size={14} /></button></div></form>;
+}
+
+function OfferForm({ enquiry, onSave, onClose }) {
+  const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  async function submit(event) { event.preventDefault(); setBusy(true); const form = new FormData(event.currentTarget); try { await onSave({ enquiry: enquiry.id, offered_price: form.get('offered_price'), quantity: form.get('quantity'), message: form.get('message') }); onClose(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
+  return <form className="form-stack modal-form" onSubmit={submit}><p className="form-explainer">Offer on <b>{enquiry.crop_name}</b> · Requested up to {enquiry.requested_quantity} {enquiry.listing_unit}.</p><Notice tone="danger">{error}</Notice><div className="form-grid"><FormField name="offered_price" label="Your price (₹ per unit)" type="number" required min="0.01" step="0.01" /><FormField name="quantity" label={`Quantity (${enquiry.listing_unit})`} type="number" required min="0.001" max={enquiry.requested_quantity} step="0.001" defaultValue={enquiry.requested_quantity} /></div><FormField as="textarea" name="message" label="A note for the farmer (optional)" rows={3} placeholder="Let them know what works for you…" /><div className="modal-actions"><button type="button" className="button button--secondary" onClick={onClose}>Cancel</button><button className="button button--primary" disabled={busy}>{busy ? 'Sending…' : 'Send offer'} <ArrowRight size={14} /></button></div></form>;
+}
+
+export function InboxPage() {
+  const { user } = useAuth(); const farmer = user?.role === 'FARMER'; const [tab, setTab] = useState('enquiries'); const [selected, setSelected] = useState(null); const [toast, setToast] = useState('');
+  const request = useRequest(async () => {
+    if (farmer) { const [enquiries, offers] = await Promise.all([negotiationApi.farmerEnquiries(), negotiationApi.farmerOffers()]); return { enquiries: unwrapPage(enquiries), offers: unwrapPage(offers) }; }
+    const [enquiries, offers] = await Promise.all([negotiationApi.buyerEnquiries(), negotiationApi.buyerOffers()]); return { enquiries: unwrapPage(enquiries), offers: unwrapPage(offers) };
+  }, [farmer]);
+  const entries = request.data?.[tab] || [];
+  async function act(fn, ...args) { try { await fn(...args); setSelected(null); setToast('Your update has been shared.'); await request.reload(); } catch (err) { setToast(err.message); } }
+  const title = farmer ? 'Every good deal starts with a conversation.' : 'Keep the conversation growing.';
+  return <div className="inbox-page"><div className="page-heading"><div><span className="eyebrow">GOOD THINGS GROW IN CONVERSATION</span><h1>Your conversations</h1><p>{title}</p></div></div><Notice>{toast}</Notice><div className="inbox-tabs" role="tablist"><button role="tab" aria-selected={tab === 'enquiries'} className={tab === 'enquiries' ? 'inbox-tab--active' : ''} onClick={() => setTab('enquiries')}><MessageCircle size={16} /> Enquiries <span>{request.data?.enquiries?.length ?? '—'}</span></button><button role="tab" aria-selected={tab === 'offers'} className={tab === 'offers' ? 'inbox-tab--active' : ''} onClick={() => setTab('offers')}><CircleDollarSign size={16} /> Offers <span>{request.data?.offers?.length ?? '—'}</span></button></div>
+    {request.loading ? <LoadingState label="Checking your conversations…" /> : request.error ? <ErrorState message={request.error} onRetry={request.reload} /> : entries.length ? <div className="conversation-list">{entries.map((item) => { const offer = tab === 'offers'; const name = offer ? item.crop_name : item.crop_name; const status = item.status; return <article className="conversation-card" key={item.id}><div className="conversation-card__icon">{offer ? <CircleDollarSign size={18} /> : <MessageCircle size={18} />}</div><div className="conversation-card__main"><div className="conversation-card__top"><div><span className="eyebrow">{offer ? `OFFER · #${item.id}` : `ENQUIRY · #${item.id}`}</span><h3>{name || 'Crop conversation'}</h3></div><span className={badge(status)}>{status?.toLowerCase()}</span></div><p>{offer ? `${money(item.offered_price)} per unit · ${item.quantity} listed quantity` : item.message}</p><div className="conversation-meta"><span>{farmer ? `From ${offer ? item.buyer_username : item.buyer_username}` : `With ${offer ? item.farmer_username : item.farmer_username}`}</span><span>·</span><span>{date(item.created_at)}</span>{!offer && <><span>·</span><span>{item.requested_quantity} / {item.listing_quantity} {item.listing_unit}</span></>}</div>{item.farmer_response && <div className="farmer-reply"><b>Your farmer replied</b><span>{item.farmer_response}</span></div>}{offer && item.message && <div className="offer-note">“{item.message}”</div>}</div>
+          <div className="conversation-card__actions">{farmer && offer && status === 'PENDING' && <><button className="button button--primary button--small" onClick={() => act(negotiationApi.decideOffer, item.id, 'ACCEPTED')}><Check size={14} /> Accept</button><button className="text-button text-button--danger" onClick={() => act(negotiationApi.decideOffer, item.id, 'REJECTED')}><X size={14} /> Decline</button></>}{farmer && !offer && status === 'OPEN' && <button className="button button--secondary button--small" onClick={() => setSelected({ type: 'reply', item })}>Reply <ArrowRight size={14} /></button>}{!farmer && !offer && !['ACCEPTED', 'REJECTED', 'CLOSED'].includes(status) && <button className="button button--primary button--small" onClick={() => setSelected({ type: 'offer', item })}>Make an offer <ArrowRight size={14} /></button>}</div>
+        </article>; })}</div> : <EmptyState title={tab === 'offers' ? 'No offers just yet' : 'Your inbox is quiet for now'} message={farmer ? 'When a buyer reaches out about your crops, you’ll see the conversation here.' : 'Reach out about a crop listing to get a conversation started.'} />}
+    {selected?.type === 'reply' && <Modal title="Reply to enquiry" onClose={() => setSelected(null)}><EnquiryResponseForm enquiry={selected.item} onSave={(data) => act(negotiationApi.respondEnquiry, selected.item.id, data)} onClose={() => setSelected(null)} /></Modal>}{selected?.type === 'offer' && <Modal title="Make an offer" onClose={() => setSelected(null)}><OfferForm enquiry={selected.item} onSave={(data) => act(negotiationApi.createOffer, data)} onClose={() => setSelected(null)} /></Modal>}
+  </div>;
+}

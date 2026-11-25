@@ -1,5 +1,30 @@
 \# KrishiConnect – Farmer Market Price Discovery and Buyer Linkage Platform
 
+## Separate backend and frontend
+
+The Django REST API lives in the repository root. The independent React/Vite
+frontend lives in `frontend/`. Each app has its own dependencies and server.
+
+Start the backend in one terminal from the repository root:
+
+```bash
+.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+Start the frontend in another terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL shown in the terminal (usually `http://localhost:5173`).
+Vite forwards `/api` and `/admin` requests to Django. Copy
+`frontend/.env.example` to `frontend/.env.local`; set `VITE_API_BASE_URL=/api`
+to use the development proxy, or provide the full API URL for a deployed
+backend. Vite derives its proxy destination from that setting.
+
 
 
 KrishiConnect is a Django REST Framework-based backend application designed to help farmers discover agricultural market prices, manage crop listings and connect with potential buyers.
@@ -44,7 +69,7 @@ The platform provides market price information sourced from the Government of In
 
 | Buyers | Buyer profiles and buyer-specific functionality |
 
-| Crops | Crop management and farmer crop listings |
+| Crops | Admin-managed crop catalog and farmer crop listings |
 
 | Market Prices | Agmarknet data import, price search, comparison and history |
 
@@ -328,7 +353,8 @@ Do not hardcode JWT tokens in frontend source code or commit them to GitHub.
 
 
 
-The frontend application should communicate with the backend using HTTP requests.
+The React/Vite frontend in `frontend/` communicates with Django through HTTP
+requests. During local development, Vite proxies `/api` requests to the backend.
 
 
 
@@ -552,8 +578,17 @@ python manage.py runserver
 
 python manage.py import\_market\_prices --limit 5
 
+\# Create repeatable local demo data and test accounts
+
+python manage.py seed\_demo\_data
+
 ```
 
+
+
+The demo accounts are `demo_farmer` and `demo_buyer`, both with password
+`KrishiDemo2026!`. They are intended for local preview; change or remove them
+before using a shared or deployed database.
 
 
 \## GitHub Collaboration
@@ -604,7 +639,11 @@ The main backend modules have been developed and their APIs were tested during d
 
 
 
-The frontend is developed separately and will integrate with the backend through REST APIs.
+The frontend and backend are maintained as separate apps in this repository and integrate through REST APIs.
+
+The crop catalog is available at `GET /api/crops/catalog/`. Crop records are
+managed in Django Admin; farmers select an existing crop when creating a
+listing.
 
 
 

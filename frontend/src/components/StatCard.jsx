@@ -1,0 +1,1 @@
+export function StatCard({ label, value, detail, icon: Icon }) { return <article className="stat-card"><div className="stat-card__top"><span>{label}</span><span className="stat-card__icon"><Icon size={18} /></span></div><strong>{value}</strong>{detail && <small>{detail}</small>}</article>; }

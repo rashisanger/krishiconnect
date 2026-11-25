@@ -1,12 +1,25 @@
 
 from rest_framework import generics, permissions
+from rest_framework.response import Response
 
 from accounts.permissions import IsFarmer, IsBuyer
 from farmers.models import FarmerProfile
 
-from .models import CropListing
+from .models import Crop, CropListing
 from .serializers import CropListingSerializer
 from .pagination import CropListingPagination
+
+
+class CropCatalogView(generics.ListAPIView):
+    """Expose existing crop records for listing forms and filters."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        crops = Crop.objects.order_by('name').values(
+            'id', 'name', 'category', 'description'
+        )
+        return Response(crops)
 
 
 class FarmerCropListingView(generics.ListCreateAPIView):

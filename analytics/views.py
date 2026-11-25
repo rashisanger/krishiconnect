@@ -195,8 +195,8 @@ class HistoricalCropPriceView(generics.GenericAPIView):
             'price_date',
         ).annotate(
             average_modal_price=Avg('modal_price'),
-            minimum_price=Avg('min_price'),
-            maximum_price=Avg('max_price'),
+            minimum_price=Avg('minimum_price'),
+            maximum_price=Avg('maximum_price'),
             record_count=Count('id'),
         ).order_by('price_date')
 
@@ -309,8 +309,8 @@ class MandiPriceComparisonView(generics.GenericAPIView):
             'district',
         ).annotate(
             average_modal_price=Avg('modal_price'),
-            minimum_price=Avg('min_price'),
-            maximum_price=Avg('max_price'),
+            minimum_price=Avg('minimum_price'),
+            maximum_price=Avg('maximum_price'),
             record_count=Count('id'),
         ).order_by('average_modal_price')
 
