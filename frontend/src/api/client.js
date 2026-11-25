@@ -1,4 +1,5 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+export const DJANGO_ADMIN_URL = import.meta.env.VITE_DJANGO_ADMIN_URL || '/admin/';
 const ACCESS_KEY = 'kc_access_token';
 const REFRESH_KEY = 'kc_refresh_token';
 
@@ -37,8 +38,8 @@ async function refreshAccessToken() {
 export async function apiRequest(path, { method = 'GET', body, query, auth = true, retry = true } = {}) {
   const suffix = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
   const url = API_BASE_URL.startsWith('/') ? new URL(suffix, window.location.origin) : new URL(suffix);
-  const requestUrl = API_BASE_URL.startsWith('/') ? `${url.pathname}${url.search}` : url.toString();
   if (query) Object.entries(query).forEach(([key, value]) => value !== '' && value != null && url.searchParams.set(key, value));
+  const requestUrl = API_BASE_URL.startsWith('/') ? `${url.pathname}${url.search}` : url.toString();
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   const access = auth ? tokenStore.getAccess() : null;

@@ -34,9 +34,13 @@ class FarmerCropListingView(generics.ListCreateAPIView):
     pagination_class = CropListingPagination
 
     def get_queryset(self):
-        return CropListing.objects.filter(
+        queryset = CropListing.objects.filter(
             farmer__user=self.request.user
         ).select_related('crop').order_by('-created_at')
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(crop__name__icontains=search)
+        return queryset
 
     def perform_create(self, serializer):
         farmer_profile = FarmerProfile.objects.get(

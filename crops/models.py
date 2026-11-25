@@ -1,4 +1,6 @@
 
+from decimal import Decimal
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Q
@@ -65,7 +67,7 @@ class CropListing(models.Model):
     quantity = models.DecimalField(
         max_digits=12,
         decimal_places=3,
-        validators=[MinValueValidator(0.001)]
+        validators=[MinValueValidator(Decimal('0.001'))]
     )
 
     unit = models.CharField(

@@ -9,6 +9,7 @@ import { ListingsPage } from '../pages/ListingsPage.jsx';
 import { MarketPage } from '../pages/MarketPage.jsx';
 import { InboxPage } from '../pages/InboxPage.jsx';
 import { AccountPage } from '../pages/AccountPage.jsx';
+import { AdminDashboardPage } from '../pages/AdminDashboardPage.jsx';
 import { LoadingState } from '../components/Feedback.jsx';
 
 function Protected({ children }) { const { user, ready } = useAuth(); if (!ready) return <LoadingState />; return user ? children : <Navigate to="/login" replace />; }
@@ -20,8 +21,8 @@ export function App() {
     <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
     <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
     <Route element={<Protected><AppShell /></Protected>}>
-      <Route path="/dashboard" element={<DashboardPage />} /><Route path="/listings" element={<ListingsPage />} />
-      <Route path="/market" element={<MarketPage />} /><Route path="/inbox" element={<InboxPage />} /><Route path="/account" element={<AccountPage />} />
+      <Route path="/dashboard" element={user?.role === 'ADMIN' ? <AdminDashboardPage /> : <DashboardPage />} /><Route path="/listings" element={user?.role === 'ADMIN' ? <Navigate to="/dashboard" replace /> : <ListingsPage />} />
+      <Route path="/market" element={<MarketPage />} /><Route path="/inbox" element={user?.role === 'ADMIN' ? <Navigate to="/dashboard" replace /> : <InboxPage />} /><Route path="/account" element={<AccountPage />} />
     </Route>
     <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
   </Routes>;

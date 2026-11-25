@@ -24,6 +24,26 @@ Vite forwards `/api` and `/admin` requests to Django. Copy
 `frontend/.env.example` to `frontend/.env.local`; set `VITE_API_BASE_URL=/api`
 to use the development proxy, or provide the full API URL for a deployed
 backend. Vite derives its proxy destination from that setting.
+For this local project setup, Django serves its admin static assets in the
+development environment, and Vite proxies `/static/` to Django. Production
+mode disables this development static route. Set `VITE_DJANGO_ADMIN_URL` to the
+backend's `/admin/` URL when the frontend and backend use separate public
+origins; the local default `/admin/` uses Vite's proxy.
+
+To use the ngrok backend tunnel from the local frontend, set
+`VITE_API_BASE_URL=https://spied-harmonize-silliness.ngrok-free.dev/api` in
+`frontend/.env.local`, then restart Vite. In the backend `.env`, allow the
+tunnel hostname with `DJANGO_ALLOWED_HOSTS` and add the frontend's exact origin
+to `CORS_ALLOWED_ORIGINS`. Set `CSRF_TRUSTED_ORIGINS` for any HTTPS origin
+used to access Django Admin. Keep `DJANGO_DEBUG=False` when the tunnel is
+publicly accessible.
+
+For a UI review link, tunnel the frontend port instead: run the Vite app on
+port `5173`, then start `ngrok http 5173`. Keep `VITE_API_BASE_URL=/api` so
+Vite proxies API calls to the local Django server on port `8000`. Add the exact
+ngrok hostname to `VITE_ALLOWED_HOSTS` in `frontend/.env.local`, then restart
+Vite. Reviewers can use the ngrok URL to view the frontend; the backend remains
+reachable through Vite's API proxy.
 
 
 
@@ -76,6 +96,30 @@ The platform provides market price information sourced from the Government of In
 | Enquiries | Buyer-farmer enquiries and offers |
 
 | Analytics | Platform, crop price, mandi and farmer listing statistics |
+
+### Market data freshness and admin dashboard
+
+Market price searches filter the records currently stored in the local database.
+An admin can open **Admin overview** in the frontend and refresh Agmarknet data
+for a crop, state, district and/or mandi. The refresh imports up to 100 matching
+source records and updates existing records rather than duplicating them. The
+dashboard and price search show the latest *reported market date*; this is the
+date supplied by Agmarknet, not a guarantee that the source publishes a record
+for today.
+
+Set `AGMARKNET_API_KEY` in the backend `.env` file before using the refresh
+action. The value in `.env.example` is a placeholder. If the API key is missing
+or the source cannot be reached, the dashboard displays the backend error.
+
+The existing import command can be scheduled by the host operating system. On
+Linux or macOS, after configuring `AGMARKNET_API_KEY`, add a daily cron job:
+
+```cron
+15 5 * * * /absolute/path/to/KrishiConnect/scripts/refresh_market_prices.sh >> /absolute/path/to/KrishiConnect/market-price-refresh.log 2>&1
+```
+
+This refreshes the local database once per day; it is not a live stream. The
+frontend refresh button remains available for an admin-triggered import.
 
 
 
@@ -202,6 +246,15 @@ AGMARKNET\_API\_KEY=your\_data\_gov\_in\_api\_key
 
 
 Do not upload `.env` to GitHub or share your API key publicly.
+
+For deployment, set `DJANGO_ENV=production`, a unique `DJANGO_SECRET_KEY`,
+`DJANGO_DEBUG=False`, and `SERVE_STATIC_FILES=False`. Production mode enables
+HTTPS redirects, secure session/CSRF cookies, and a one-hour HSTS policy by
+default; set these behind a correctly configured HTTPS proxy. Production also
+defaults to SMTP email, so configure `EMAIL_HOST`, `EMAIL_PORT`, and any
+credentials/TLS settings for your mail provider. Development generates a
+temporary signing key when none is provided; that key changes when Django
+restarts.
 
 
 
@@ -448,7 +501,7 @@ The market price APIs support:
 
 
 
-\*\*Data limitation:\*\* The currently imported dataset contains records from one reporting date. Historical API functionality can retrieve stored records, but meaningful multi-date historical trends require data from multiple dates.
+**Data limitation:** Seeded preview rows cover seven dates with synthetic price movements and are labeled `KrishiConnect Demo`. They are for UI demonstration only. Real market history and trend quality depend on the reporting dates available from Agmarknet.
 
 
 
@@ -474,7 +527,7 @@ The analytics module provides:
 
 
 
-Historical price analytics are excluded from the implemented analytics scope because the current dataset does not contain sufficient multi-date records.
+The admin dashboard plots the latest saved report dates. Demo fixtures are marked by source; production analytics should use imported Agmarknet records.
 
 
 

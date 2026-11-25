@@ -27,6 +27,7 @@ export const profileApi = {
 export const marketApi = {
   prices: (query) => apiRequest('/market-prices/', { query }),
   compare: (query) => apiRequest('/market-prices/compare/', { query }),
+  refresh: (filters) => apiRequest('/market-prices/refresh/', { method: 'POST', body: filters }),
 };
 
 export const negotiationApi = {
@@ -40,4 +41,8 @@ export const negotiationApi = {
   decideOffer: (id, status) => apiRequest(`/enquiries/farmer/offers/${id}/decision/`, { method: 'PATCH', body: { status } }),
 };
 
-export const analyticsApi = { farmerListings: () => apiRequest('/analytics/farmer/listing-statistics/') };
+export const analyticsApi = {
+  farmerListings: () => apiRequest('/analytics/farmer/listing-statistics/'),
+  overview: () => apiRequest('/analytics/overview/'),
+  cropAveragePrices: (query) => apiRequest('/analytics/crop-average-prices/', { query }),
+};

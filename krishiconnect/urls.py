@@ -1,7 +1,9 @@
 
 from django.contrib import admin
+from django.conf import settings
 from django.http import JsonResponse
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.contrib.staticfiles.views import serve as serve_static
 
 
 def home(request):
@@ -39,3 +41,13 @@ urlpatterns = [
     path('api/enquiries/', include('enquiries.urls')),
     path('api/analytics/', include('analytics.urls')),
 ]
+
+if settings.SERVE_STATIC_FILES:
+    urlpatterns += [
+        re_path(
+            r'^static/(?P<path>.*)$',
+            serve_static,
+            {'insecure': True},
+            name='development-static-files',
+        ),
+    ]

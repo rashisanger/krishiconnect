@@ -5,10 +5,16 @@ from .views import (
     MarketPriceListView,
     MarketPriceCompareView,
     MarketPriceHistoryView,
+    MarketPriceRefreshView,
 )
 
 
 urlpatterns = [
+    path(
+        'refresh/',
+        MarketPriceRefreshView.as_view(),
+        name='market-price-refresh',
+    ),
     path(
         '',
         MarketPriceListView.as_view(),

@@ -109,23 +109,33 @@ class Command(BaseCommand):
             )
 
         price_specs = [
-            ('Demo Tomato', 'Nashik', 'Lasalgaon', 'Lasalgaon APMC', 'Local', '2100.00', '2800.00', '2450.00'),
-            ('Demo Tomato', 'Pune', 'Pune', 'Pune Market Yard', 'Local', '2250.00', '2950.00', '2610.00'),
-            ('Demo Onion', 'Nashik', 'Lasalgaon', 'Lasalgaon APMC', 'Red', '1600.00', '2200.00', '1875.00'),
-            ('Demo Wheat', 'Pune', 'Pune', 'Pune Market Yard', 'Lokwan', '2600.00', '3100.00', '2840.00'),
-            ('Demo Banana', 'Jalgaon', 'Jalgaon', 'Jalgaon APMC', 'Grand Naine', '2800.00', '3600.00', '3250.00'),
+            ('Demo Tomato', 'Maharashtra', 'Nashik', 'Lasalgaon APMC', 'Local', '2100.00', '2800.00', '2450.00'),
+            ('Demo Tomato', 'Maharashtra', 'Pune', 'Pune Market Yard', 'Local', '2250.00', '2950.00', '2610.00'),
+            ('Demo Onion', 'Maharashtra', 'Nashik', 'Lasalgaon APMC', 'Red', '1600.00', '2200.00', '1875.00'),
+            ('Demo Wheat', 'Maharashtra', 'Pune', 'Pune Market Yard', 'Lokwan', '2600.00', '3100.00', '2840.00'),
+            ('Demo Banana', 'Maharashtra', 'Jalgaon', 'Jalgaon APMC', 'Grand Naine', '2800.00', '3600.00', '3250.00'),
         ]
-        price_date = date.today() - timedelta(days=1)
-        for name, state, district, mandi, variety, minimum, maximum, modal in price_specs:
-            MarketPrice.objects.update_or_create(
-                crop=crops[name], state=state, district=district, mandi=mandi,
-                variety=variety, price_date=price_date, source='KrishiConnect Demo',
-                defaults={
-                    'minimum_price': Decimal(minimum),
-                    'maximum_price': Decimal(maximum),
-                    'modal_price': Decimal(modal),
-                },
-            )
+        # Remove only these demo fixtures so a rerun corrects older malformed
+        # state/district values instead of leaving duplicates behind.
+        MarketPrice.objects.filter(
+            source='KrishiConnect Demo',
+            crop__name__in=[spec[0] for spec in price_specs],
+        ).delete()
+        for day_index, days_ago in enumerate(range(7, 0, -1)):
+            price_date = date.today() - timedelta(days=days_ago)
+            # Small synthetic movements make the admin trend chart useful in
+            # previews. These rows stay visibly marked as demo source data.
+            factor = Decimal('1') + Decimal(day_index - 3) * Decimal('0.02')
+            for name, state, district, mandi, variety, minimum, maximum, modal in price_specs:
+                MarketPrice.objects.update_or_create(
+                    crop=crops[name], state=state, district=district, mandi=mandi,
+                    variety=variety, price_date=price_date, source='KrishiConnect Demo',
+                    defaults={
+                        'minimum_price': (Decimal(minimum) * factor).quantize(Decimal('0.01')),
+                        'maximum_price': (Decimal(maximum) * factor).quantize(Decimal('0.01')),
+                        'modal_price': (Decimal(modal) * factor).quantize(Decimal('0.01')),
+                    },
+                )
 
         buyer_profile = BuyerProfile.objects.get(user=buyer_user)
         enquiry, _ = Enquiry.objects.update_or_create(

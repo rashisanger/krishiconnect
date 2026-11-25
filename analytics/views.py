@@ -62,9 +62,21 @@ class PlatformOverviewView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
-        available_listings = CropListing.objects.filter(
-            availability_status=CropListing.AvailabilityStatus.AVAILABLE
-        ).count()
+        listing_stats = CropListing.objects.aggregate(
+            total=Count('id'),
+            available=Count('id', filter=Q(
+                availability_status=CropListing.AvailabilityStatus.AVAILABLE
+            )),
+            reserved=Count('id', filter=Q(
+                availability_status=CropListing.AvailabilityStatus.RESERVED
+            )),
+            sold=Count('id', filter=Q(
+                availability_status=CropListing.AvailabilityStatus.SOLD
+            )),
+            inactive=Count('id', filter=Q(
+                availability_status=CropListing.AvailabilityStatus.INACTIVE
+            )),
+        )
 
         total_farmers = FarmerProfile.objects.count()
         total_buyers = BuyerProfile.objects.count()
@@ -113,12 +125,29 @@ class PlatformOverviewView(generics.GenericAPIView):
             ),
         )
 
+        market_price_trend = list(
+            MarketPrice.objects.values('price_date').annotate(
+                average_modal_price=Avg('modal_price'),
+                record_count=Count('id'),
+            ).order_by('-price_date')[:14]
+        )
+        market_price_trend.reverse()
+
         return Response({
-            'total_available_crop_listings': available_listings,
+            'total_available_crop_listings': listing_stats['available'],
+            'listings': listing_stats,
             'total_registered_farmers': total_farmers,
             'total_registered_buyers': total_buyers,
             'enquiries': enquiry_stats,
             'offers': offer_stats,
+            'market_price_trend': [{
+                'date': row['price_date'].isoformat(),
+                'average_modal_price': (
+                    float(row['average_modal_price'])
+                    if row['average_modal_price'] is not None else None
+                ),
+                'record_count': row['record_count'],
+            } for row in market_price_trend],
         })
 
 

@@ -112,6 +112,74 @@
 .account-summary>p{font-size:12px}
 .account-role{font-size:10px}
 .account-form-panel .panel__heading h2{font-size:20px}
+.market-result-summary{display:flex;flex-wrap:wrap;gap:8px 22px;margin:14px 0;padding:12px 15px;border:1px solid #e7ece4;border-radius:10px;background:#fff;color:#718071;font-size:12px}
+.market-page .market-table{min-width:850px}
+.market-result-summary span:first-child{color:#385b3d;font-weight:700}
+.market-result-summary b{color:#435246;font-weight:700}
+.pagination-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 18px;padding:10px 2px;color:#7c887e;font-size:12px}
+.pagination-controls>div{display:flex;align-items:center;gap:9px}
+.pagination-controls button{display:inline-flex;align-items:center;gap:5px}
+.pagination-controls button:disabled{opacity:.45;cursor:not-allowed}
+.pagination-page{color:#607163;font-variant-numeric:tabular-nums}
+.admin-account-panel{display:flex;align-items:center;gap:16px;padding:22px}
+.admin-account-panel h2{margin:0 0 4px;font-size:18px}
+.admin-account-panel p{margin:0;color:#859087;font-size:12px}
+.admin-account-panel>.button{margin-left:auto}
+.admin-dashboard{display:flex;flex-direction:column;gap:18px}
+.admin-dashboard>.welcome-row{margin-bottom:0}
+.admin-dashboard .welcome-row h1{display:flex;align-items:center;gap:10px}
+.admin-shield{color:#6b8a5c}
+.admin-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:0}
+.admin-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:16px;align-items:start}
+.admin-sync-panel,.admin-status-panel,.admin-prices-panel{padding:20px}
+.admin-sync-panel .panel__heading,.admin-status-panel .panel__heading,.admin-prices-panel .panel__heading{margin-bottom:12px}
+.admin-sync-panel .panel__heading h2,.admin-status-panel .panel__heading h2,.admin-prices-panel .panel__heading h2{font-size:19px}
+.admin-sync-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#edf3e8;color:#4b7d4f}
+.admin-panel-intro{max-width:660px;margin:0 0 16px;color:#78857a;font-size:13px;line-height:1.65}
+.admin-refresh-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-refresh-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px;padding-top:14px;border-top:1px solid #edf0eb}
+.admin-refresh-footer>span{color:#8b968b;font-size:11px}
+.admin-refresh-footer .button{flex:none}
+.admin-side-column{display:grid;gap:14px}
+.admin-freshness-card{min-height:0;margin:0;padding:18px;border:1px solid #e6ece2;border-radius:12px;background:#f5f8f1}
+.admin-freshness-card h3{font-size:20px}
+.admin-freshness-card p{font-size:12px;line-height:1.6}
+.admin-freshness-card a{display:inline-flex;align-items:center;gap:5px;font-size:12px}
+.admin-status-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eff2ed;color:#758176;font-size:12px}
+.admin-status-row:last-child{border-bottom:0}
+.admin-status-row b{color:#3e5841;font-size:13px}
+.admin-prices-panel .market-table-wrap{border:0;border-radius:0}
+.admin-prices-panel .market-table th:first-child,.admin-prices-panel .market-table td:first-child{padding-left:0}
+.admin-prices-panel .market-table th:last-child,.admin-prices-panel .market-table td:last-child{padding-right:0}
+.admin-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.analytics-panel{min-width:0;padding:20px}
+.analytics-panel--wide{grid-column:span 2}
+.analytics-panel .panel__heading{margin-bottom:16px}
+.analytics-period{padding:6px 9px;border-radius:20px;background:#f2f5ef;color:#829083;font-size:10px;white-space:nowrap}
+.analytics-column-chart svg{width:100%;height:auto;overflow:visible}
+.analytics-column{transform-origin:center bottom;animation:chart-rise .45s ease both}
+.chart-value-label{fill:#506354;font-family:inherit;font-size:10px;font-weight:700}
+.chart-category-label{fill:#7f8c80;font-family:inherit;font-size:10px}
+.analytics-donut-layout{display:flex;align-items:center;justify-content:center;gap:25px;min-height:220px}
+.analytics-donut{width:176px;height:176px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--donut-gradient);position:relative}
+.analytics-donut:before{content:'';position:absolute;inset:19px;border-radius:50%;background:#fff}
+.analytics-donut>div{position:relative;display:grid;gap:2px;text-align:center}
+.analytics-donut strong{color:#2d4331;font-family:'Manrope',sans-serif;font-size:30px;line-height:1}
+.analytics-donut span{color:#89958a;font-size:11px}
+.analytics-legend{display:grid;gap:12px;min-width:125px;margin:0;padding:0;list-style:none}
+.analytics-legend li,.analytics-legend__label{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#748075;font-size:12px}
+.analytics-legend li b{color:#405644;font-variant-numeric:tabular-nums}
+.analytics-legend__label{justify-content:flex-start}
+.analytics-legend__label i{width:9px;height:9px;flex:none;border-radius:3px}
+.analytics-empty{display:grid;min-height:90px;place-items:center;padding:18px;border:1px dashed #e1e8de;border-radius:9px;color:#8a968b;font-size:12px;text-align:center}
+.price-trend-chart svg{width:100%;height:auto;overflow:visible}
+.chart-gridline{stroke:#edf1eb;stroke-width:1}
+.chart-axis-label{fill:#98a398;font-family:inherit;font-size:10px}
+.price-trend-area{fill:#5c8f5e;fill-opacity:.12}
+.price-trend-line{fill:none;stroke:#4d8052;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.price-trend-point{fill:#fff;stroke:#4d8052;stroke-width:2.5}
+.chart-caption{margin:0;color:#929d92;font-size:10px}
+@keyframes chart-rise{from{opacity:.35;transform:scaleY(.82)}to{opacity:1;transform:scaleY(1)}}
 @media(max-width:760px){
   .side-nav__link{font-size:14px}
   .welcome-row__date span{font-size:10px}
@@ -120,4 +188,19 @@
   .mini-listing__name b,.mini-listing__quantity>b{font-size:11px}
   .mini-listing__name small,.mini-listing__quantity>small,.mini-listing__price small{font-size:9px}
   .page-heading p,.welcome-row p{font-size:13px}
+  .admin-dashboard-grid{grid-template-columns:1fr}
+  .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-sync-panel,.admin-status-panel,.admin-prices-panel{padding:15px}
+  .admin-refresh-footer{align-items:flex-start;flex-direction:column}
+  .market-result-summary{gap:7px 14px;font-size:11px}
+  .pagination-controls{align-items:flex-start;flex-direction:column}
+  .admin-account-panel{align-items:flex-start;flex-direction:column}
+  .admin-account-panel>.button{margin-left:0}
+  .admin-analytics-grid{grid-template-columns:1fr}
+  .analytics-panel--wide{grid-column:auto}
+  .analytics-panel{padding:15px}
+  .analytics-period{font-size:9px}
+  .analytics-donut-layout{gap:16px}
+  .analytics-donut{width:140px;height:140px}
+  .analytics-donut:before{inset:16px}
 }

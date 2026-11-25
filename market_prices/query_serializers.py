@@ -2,6 +2,14 @@
 from rest_framework import serializers
 
 
+class MarketPriceRefreshSerializer(serializers.Serializer):
+    crop = serializers.CharField(required=False, max_length=100, allow_blank=False)
+    state = serializers.CharField(required=False, max_length=100, allow_blank=False)
+    district = serializers.CharField(required=False, max_length=100, allow_blank=False)
+    mandi = serializers.CharField(required=False, max_length=150, allow_blank=False)
+    limit = serializers.IntegerField(required=False, min_value=1, max_value=100, default=100)
+
+
 class MarketPriceFilterSerializer(serializers.Serializer):
 
     crop = serializers.CharField(

@@ -1,4 +1,6 @@
 
+from decimal import Decimal
+
 from django.db import models
 from django.db.models import Q
 from django.core.validators import MinValueValidator
@@ -27,7 +29,7 @@ class Enquiry(models.Model):
     requested_quantity = models.DecimalField(
         max_digits=12,
         decimal_places=3,
-        validators=[MinValueValidator(0.001)],
+        validators=[MinValueValidator(Decimal('0.001'))],
     )
     farmer_response = models.TextField(blank=True, default='')
     status = models.CharField(
@@ -70,7 +72,7 @@ class Offer(models.Model):
     quantity = models.DecimalField(
         max_digits=12,
         decimal_places=3,
-        validators=[MinValueValidator(0.001)],
+        validators=[MinValueValidator(Decimal('0.001'))],
     )
     message = models.TextField(blank=True)
     status = models.CharField(

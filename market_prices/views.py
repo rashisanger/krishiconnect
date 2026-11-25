@@ -3,6 +3,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from rest_framework import status
+from django.utils import timezone
+
+from accounts.permissions import IsAdmin
+from .services import fetch_market_prices, AgmarknetAPIError
+from .importers import import_market_price_records
 
 from .models import MarketPrice
 from .serializers import MarketPriceSerializer
@@ -11,6 +17,7 @@ from .query_serializers import (
     MarketPriceFilterSerializer,
     MarketPriceCompareQuerySerializer,
     MarketPriceHistoryQuerySerializer,
+    MarketPriceRefreshSerializer,
 )
 
 
@@ -145,6 +152,11 @@ class MarketPriceListView(APIView):
         )
 
         queryset = filter_market_prices(filters)
+        latest_price_date = queryset.order_by(
+            '-price_date'
+        ).values_list('price_date', flat=True).first()
+        matching_count = queryset.count()
+        sources = list(queryset.order_by().values_list('source', flat=True).distinct())
 
         queryset = apply_sorting(
             queryset,
@@ -164,7 +176,45 @@ class MarketPriceListView(APIView):
             many=True
         )
 
-        return paginator.get_paginated_response(serializer.data)
+        response = paginator.get_paginated_response(serializer.data)
+        response.data['count'] = matching_count
+        response.data['latest_price_date'] = latest_price_date
+        response.data['source'] = sources[0] if len(sources) == 1 else (
+            'Multiple sources' if sources else None
+        )
+        return response
+
+
+class MarketPriceRefreshView(APIView):
+    """Fetch the latest matching Agmarknet records. Restricted to admins."""
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request):
+        serializer = MarketPriceRefreshSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        filters = serializer.validated_data
+        limit = filters.pop('limit', 100)
+
+        try:
+            records = fetch_market_prices(limit=limit, filters=filters)
+        except AgmarknetAPIError as exc:
+            return Response(
+                {'detail': str(exc)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        imported = import_market_price_records(records)
+        return Response({
+            'message': 'Agmarknet refresh completed.',
+            'refreshed_at': timezone.now().isoformat(),
+            'filters': filters,
+            'total_received': imported['total_received'],
+            'created': imported['created'],
+            'updated': imported['updated'],
+            'skipped': imported['skipped'],
+            'errors': imported['errors'][:5],
+        })
 
 
 class MarketPriceCompareView(APIView):

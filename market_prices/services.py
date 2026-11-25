@@ -16,7 +16,7 @@ class AgmarknetAPIError(Exception):
     pass
 
 
-def fetch_market_prices(limit=10, offset=0):
+def fetch_market_prices(limit=10, offset=0, filters=None):
     """
     Fetch market-price records from the official data.gov.in API.
     """
@@ -39,6 +39,17 @@ def fetch_market_prices(limit=10, offset=0):
         'limit': limit,
         'offset': offset,
     }
+
+    api_filter_names = {
+        'crop': 'commodity',
+        'state': 'state',
+        'district': 'district',
+        'mandi': 'market',
+    }
+    for key, api_name in api_filter_names.items():
+        value = (filters or {}).get(key)
+        if value:
+            params[f'filters[{api_name}]'] = value.strip()
 
     headers = {
         'User-Agent': 'Mozilla/5.0'
